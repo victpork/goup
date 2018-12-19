@@ -35,6 +35,7 @@ func ExtractArchive(srcFile *os.File, size int64, targetPath string, progCback f
 		if err != nil {
 			return errors.Wrap(err, "Error opening tar file")
 		}
+		dstPath := filepath.Join(targetPath, f.Name[3:])
 		if f.FileInfo().IsDir() {
 			err = os.MkdirAll(filepath.Dir(dstPath), f.FileInfo().Mode())
 			if err != nil {
@@ -42,9 +43,8 @@ func ExtractArchive(srcFile *os.File, size int64, targetPath string, progCback f
 			}
 			continue
 		}
-		dstPath := filepath.Join(targetPath, f.Name[3:])
-		progCback("Extracting %s...\n", dstPath)
 
+		progCback("Extracting %s...\n", dstPath)
 
 		dstFile, err := os.OpenFile(dstPath, os.O_CREATE|os.O_WRONLY, f.FileInfo().Mode())
 		if err != nil {
