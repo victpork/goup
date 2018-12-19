@@ -2,7 +2,6 @@ package goup
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -140,19 +140,22 @@ func LatestVersionInfo() (versionInfo []VersionInfo, err error) {
 }
 
 // LocalGoInfo returns local Go version numbers, OS and Arch
-func LocalGoInfo(exePath string) (ver, os, arch string, err error) {
+func LocalGoInfo(exePath string) (ver VersionInfo, os, arch string, err error) {
 	verCmd := exec.Command(exePath, "version")
 	out, err := verCmd.Output()
 	if err != nil {
-		return "", "", "", err
+		return VersionInfo{}, "", "", errors.Wrap(err, "Error happens when trying to execute go")
 	}
 	if len(out) <= 0 {
-		return "", "", "", errors.New("go version returns improper")
+		return VersionInfo{}, "", "", errors.New("go version returns improper")
 	}
 	goVerInfo := strings.Split(string(out), " ")
 	archOSInfo := strings.Split(goVerInfo[3], "/")
-
-	return strings.TrimSpace(goVerInfo[2][2:]), strings.TrimSpace(archOSInfo[0]), strings.TrimSpace(archOSInfo[1]), nil
+	verInfo, err := ExtractVersionInfo(strings.TrimSpace(goVerInfo[2][2:]))
+	if err != nil {
+		return VersionInfo{}, "", "", err
+	}
+	return verInfo, strings.TrimSpace(archOSInfo[0]), strings.TrimSpace(archOSInfo[1]), nil
 }
 
 // GoPath extract GOPATH path from `go env` command

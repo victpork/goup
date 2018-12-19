@@ -14,8 +14,8 @@ import (
 
 var (
 	verbose   = kingpin.Flag("verbose", "Prints verbose messages.").Short('v').Bool()
-	incBeta   = kingpin.Flag("beta", "Include Beta in list of consideration. True if local version is beta").Short('b').Bool()
-	incRC     = kingpin.Flag("rc", "Include Release Candidate in list of consideration. True if local version is RC").Short('c').Bool()
+	incBeta   = kingpin.Flag("beta", "Include Beta in list of consideration. True if local version is beta.").Short('b').Bool()
+	incRC     = kingpin.Flag("rc", "Include Release Candidate in list of consideration. True if local version is RC.").Short('c').Bool()
 	autoUpd   = kingpin.Flag("silent", "Auto download and upgrade local Go without confirmation.").Short('s').Bool()
 	goExePath = kingpin.Arg("path", "Path to Go executable. If omitted, will use\n1. go executable on $PATH\n2. Go default installation path").String()
 	jumpVer   = kingpin.Flag("upgrade", "Jump to latest version if available. If not set, will only update to latest build.").Short('u').Bool()
@@ -26,12 +26,12 @@ func main() {
 	goExeFullPath := filepath.Join(*goExePath, "go")
 
 	printVerbose("Running command \"%v version\"\n", goExeFullPath)
-	ver, platform, arch, err := goup.LocalGoInfo(goExeFullPath)
+	localVer, platform, arch, err := goup.LocalGoInfo(goExeFullPath)
 	if err != nil {
 		// Try default path
 		printVerbose("Trying default installation directory %s", goup.DefaultInstallDir)
 		goExeFullPath = filepath.Join(goup.DefaultInstallDir, "go")
-		ver, platform, arch, err = goup.LocalGoInfo(goExeFullPath)
+		localVer, platform, arch, err = goup.LocalGoInfo(goExeFullPath)
 		if err != nil {
 			fmt.Println("Error when getting local Go infomration", err)
 			return
@@ -45,15 +45,11 @@ func main() {
 		return
 	}
 
-	printVerbose("Local Go Info:(Version:%v, OS:%v, Arch:%v, GoHome:%v)\n", ver, platform, arch, gopath)
+	printVerbose("Local Go Info:(Version:%v, OS:%v, Arch:%v, GoHome:%v)\n", localVer, platform, arch, gopath)
 
 	availVerList, err := goup.LatestVersionInfo()
 	if err != nil {
 		fmt.Println("Cannot retrieve version information", err)
-	}
-	localVer, err := goup.ExtractVersionInfo(ver)
-	if err != nil {
-		fmt.Println("Cannot retrieve local version information", err)
 	}
 
 	// Assume user will like beta and RC if they are already using beta/RC
@@ -166,8 +162,7 @@ func main() {
 	}
 
 	// Verify
-	newLocalVerStr, _, _, err := goup.LocalGoInfo(goExeFullPath)
-	newLocalVer, err := goup.ExtractVersionInfo(newLocalVerStr)
+	newLocalVer, _, _, err := goup.LocalGoInfo(goExeFullPath)
 	if err != nil || newLocalVer != latestVer {
 		printVerbose("Error: %v\n", err)
 		err = restore(backupDir, gopath)
