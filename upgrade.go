@@ -34,6 +34,8 @@ func (vi VersionInfo) String() string {
 		return fmt.Sprintf("%d.%dbeta%d", vi.Major, vi.Minor, vi.BetaVersion)
 	} else if vi.RC {
 		return fmt.Sprintf("%d.%drc%d", vi.Major, vi.Minor, vi.RCVersion)
+	} else if vi.Build == 0 {
+		return fmt.Sprintf("%d.%d", vi.Major, vi.Minor)
 	} else {
 		return fmt.Sprintf("%d.%d.%d", vi.Major, vi.Minor, vi.Build)
 	}
